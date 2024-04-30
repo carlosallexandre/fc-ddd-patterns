@@ -23,7 +23,7 @@ describe("Order repository test", () => {
       sync: { force: true },
     });
 
-    await sequelize.addModels([
+    sequelize.addModels([
       CustomerModel,
       OrderModel,
       OrderItemModel,
@@ -80,5 +80,184 @@ describe("Order repository test", () => {
         },
       ],
     });
+  });
+
+  it("should update an order", async () => {
+    // Arrange
+    const orderRepository = new OrderRepository();
+
+    const c1 = new Customer("c1", "customer1");
+    await CustomerModel.create({
+      id: c1.id,
+      name: c1.name,
+      active: c1.isActive(),
+      rewardPoints: c1.rewardPoints,
+      zipcode: "",
+      city: "",
+      street: "",
+      number: 0,
+    });
+
+    const c2 = new Customer("c2", "customer2");
+    await CustomerModel.create({
+      id: c2.id,
+      name: c2.name,
+      active: c2.isActive(),
+      rewardPoints: c2.rewardPoints,
+      zipcode: "",
+      city: "",
+      street: "",
+      number: 0,
+    });
+
+    const product = new Product("p1", "product1", 10);
+    await ProductModel.create({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+    });
+
+    const order = new Order("o1", c1.id, [
+      new OrderItem("oi1", "name", product.price, product.id, 1),
+    ]);
+    await OrderModel.create(
+      {
+        id: order.id,
+        customer_id: order.customerId,
+        total: order.total(),
+        items: order.items.map((item) => ({
+          id: item.id,
+          product_id: item.productId,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+      },
+      { include: ["items"] }
+    );
+
+    // Act
+    order.changeCustomer(c2.id);
+    await orderRepository.update(order);
+
+    // Assert
+    const orderModel = await OrderModel.findOne({ where: { id: order.id } });
+    expect(orderModel.toJSON()).toStrictEqual({
+      id: order.id,
+      customer_id: order.customerId,
+      total: order.total(),
+    });
+  });
+
+  it("should find an order", async () => {
+    const orderRepository = new OrderRepository();
+
+    const customer = new Customer("c1", "customer1");
+    await CustomerModel.create({
+      id: customer.id,
+      name: customer.name,
+      active: customer.isActive(),
+      rewardPoints: customer.rewardPoints,
+      zipcode: "",
+      city: "",
+      street: "",
+      number: 0,
+    });
+
+    const product = new Product("p1", "product1", 10);
+    await ProductModel.create({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+    });
+
+    const order = new Order("o1", customer.id, [
+      new OrderItem("oi1", "name", product.price, product.id, 1),
+    ]);
+    await OrderModel.create(
+      {
+        id: order.id,
+        customer_id: order.customerId,
+        total: order.total(),
+        items: order.items.map((item) => ({
+          id: item.id,
+          product_id: item.productId,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+      },
+      { include: ["items"] }
+    );
+
+    const orderFounded = await orderRepository.find(order.id);
+
+    expect(orderFounded).toEqual(order);
+  });
+
+  it("should find all orders", async () => {
+    const orderRepository = new OrderRepository();
+
+    const customer = new Customer("c1", "customer1");
+    await CustomerModel.create({
+      id: customer.id,
+      name: customer.name,
+      active: customer.isActive(),
+      rewardPoints: customer.rewardPoints,
+      zipcode: "",
+      city: "",
+      street: "",
+      number: 0,
+    });
+
+    const product = new Product("p1", "product1", 10);
+    await ProductModel.create({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+    });
+
+    const o1 = new Order("o1", customer.id, [
+      new OrderItem("oi1", "name", product.price, product.id, 1),
+      new OrderItem("oi2", "name", product.price, product.id, 1),
+    ]);
+    await OrderModel.create(
+      {
+        id: o1.id,
+        customer_id: o1.customerId,
+        total: o1.total(),
+        items: o1.items.map((item) => ({
+          id: item.id,
+          product_id: item.productId,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+      },
+      { include: ["items"] }
+    );
+
+    const o2 = new Order("o2", customer.id, [
+      new OrderItem("oi1", "name", product.price, product.id, 1),
+    ]);
+    await OrderModel.create(
+      {
+        id: o2.id,
+        customer_id: o2.customerId,
+        total: o2.total(),
+        items: o2.items.map((item) => ({
+          id: item.id,
+          product_id: item.productId,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+      },
+      { include: ["items"] }
+    );
+
+    const orders = await orderRepository.findAll();
+
+    expect(orders).toEqual([o1, o2]);
   });
 });

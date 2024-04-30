@@ -1,8 +1,10 @@
 import Order from "../../../../domain/checkout/entity/order";
+import OrderItem from "../../../../domain/checkout/entity/order_item";
+import OrderRepositoryInterface from "../../../../domain/checkout/repository/order-repository.interface";
 import OrderItemModel from "./order-item.model";
 import OrderModel from "./order.model";
 
-export default class OrderRepository {
+export default class OrderRepository implements OrderRepositoryInterface {
   async create(entity: Order): Promise<void> {
     await OrderModel.create(
       {
@@ -20,6 +22,63 @@ export default class OrderRepository {
       {
         include: [{ model: OrderItemModel }],
       }
+    );
+  }
+
+  async update(entity: Order): Promise<void> {
+    await OrderModel.update(
+      {
+        customer_id: entity.customerId,
+        total: entity.total(),
+      },
+      {
+        where: {
+          id: entity.id,
+        },
+      }
+    );
+  }
+
+  async find(id: string): Promise<Order> {
+    const orderFounded = await OrderModel.findByPk(id, {
+      include: ["items"],
+    });
+
+    return new Order(
+      orderFounded.id,
+      orderFounded.customer_id,
+      orderFounded.items.map(
+        (item) =>
+          new OrderItem(
+            item.id,
+            item.name,
+            item.price,
+            item.product_id,
+            item.quantity
+          )
+      )
+    );
+  }
+
+  async findAll(): Promise<Order[]> {
+    const orders = await OrderModel.findAll({ include: ["items"] });
+
+    return orders.map(
+      (order) =>
+        new Order(
+          order.id,
+          order.customer_id,
+          order.items.map(
+            (item) =>
+              new OrderItem(
+                item.id,
+                item.name,
+                item.price,
+                item.product_id,
+                item.quantity
+              )
+          )
+        )
     );
   }
 }

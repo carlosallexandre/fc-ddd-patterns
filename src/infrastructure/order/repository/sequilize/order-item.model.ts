@@ -9,7 +9,6 @@ import {
 import ProductModel from "../../../product/repository/sequelize/product.model";
 import OrderModel from "./order.model";
 
-
 @Table({
   tableName: "order_items",
   timestamps: false,
@@ -26,6 +25,7 @@ export default class OrderItemModel extends Model {
   @BelongsTo(() => ProductModel)
   declare product: ProductModel;
 
+  @PrimaryKey
   @ForeignKey(() => OrderModel)
   @Column({ allowNull: false })
   declare order_id: string;
