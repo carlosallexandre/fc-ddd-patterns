@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import OrderItem from "./order_item";
 export default class Order {
   private _id: string;
@@ -47,7 +48,18 @@ export default class Order {
     return this._items.reduce((acc, item) => acc + item.total(), 0);
   }
 
-  changeCustomer(customerId: string): void {
-    this._customerId = customerId;
+  addItem(
+    product: { id: string; name: string; price: number },
+    quantity: number
+  ) {
+    this._items.push(
+      new OrderItem(
+        randomUUID(),
+        product.name,
+        product.price,
+        product.id,
+        quantity
+      )
+    );
   }
 }

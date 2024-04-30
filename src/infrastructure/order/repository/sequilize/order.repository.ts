@@ -26,17 +26,32 @@ export default class OrderRepository implements OrderRepositoryInterface {
   }
 
   async update(entity: Order): Promise<void> {
-    await OrderModel.update(
-      {
-        customer_id: entity.customerId,
-        total: entity.total(),
-      },
-      {
-        where: {
-          id: entity.id,
+    await OrderModel.sequelize.transaction(async (t) => {
+      await OrderModel.update(
+        {
+          customer_id: entity.customerId,
+          total: entity.total(),
         },
+        {
+          where: { id: entity.id },
+          transaction: t,
+        }
+      );
+
+      for (const item of entity.items) {
+        await OrderItemModel.upsert(
+          {
+            id: item.id,
+            order_id: entity.id,
+            product_id: item.productId,
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price,
+          },
+          { transaction: t }
+        );
       }
-    );
+    });
   }
 
   async find(id: string): Promise<Order> {

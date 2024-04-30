@@ -19,7 +19,7 @@ describe("Order repository test", () => {
     sequelize = new Sequelize({
       dialect: "sqlite",
       storage: ":memory:",
-      logging: false,
+      logging: true,
       sync: { force: true },
     });
 
@@ -137,15 +137,26 @@ describe("Order repository test", () => {
     );
 
     // Act
-    order.changeCustomer(c2.id);
+    order.addItem(product, 4);
     await orderRepository.update(order);
 
     // Assert
-    const orderModel = await OrderModel.findOne({ where: { id: order.id } });
+    const orderModel = await OrderModel.findOne({
+      where: { id: order.id },
+      include: ["items"],
+    });
     expect(orderModel.toJSON()).toStrictEqual({
       id: order.id,
       customer_id: order.customerId,
       total: order.total(),
+      items: order.items.map((item) => ({
+        id: item.id,
+        order_id: order.id,
+        product_id: item.productId,
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price,
+      })),
     });
   });
 
