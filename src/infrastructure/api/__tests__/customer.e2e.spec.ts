@@ -55,5 +55,27 @@ describe("[E2E] Customer", () => {
     expect(response.body.data).toEqual(
       expect.arrayContaining(customers.map(expect.objectContaining))
     );
+
+    const xmlResponse = await request(app)
+      .get("/customers")
+      .set("Accept", "application/xml")
+      .send();
+
+    expect(xmlResponse.status).toBe(200);
+    expect(xmlResponse.text).toContain(
+      `<?xml version="1.0" encoding="UTF-8"?>`
+    );
+    expect(xmlResponse.text).toContain(`<customers>`);
+    expect(xmlResponse.text).toContain(`<customer>`);
+    expect(xmlResponse.text).toContain(`<name>John Doe</name>`);
+    expect(xmlResponse.text).toContain(`<address>`);
+    expect(xmlResponse.text).toContain(`<street>street</street>`);
+    expect(xmlResponse.text).toContain(`<city>city</city>`);
+    expect(xmlResponse.text).toContain(`<number>123</number>`);
+    expect(xmlResponse.text).toContain(`<zip>zip</zip>`);
+    expect(xmlResponse.text).toContain(`</address>`);
+    expect(xmlResponse.text).toContain(`</customer>`);
+    expect(xmlResponse.text).toContain(`<name>Jane Doe</name>`);
+    expect(xmlResponse.text).toContain(`</customers>`);
   });
 });
