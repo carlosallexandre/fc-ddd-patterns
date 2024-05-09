@@ -3,9 +3,11 @@ import NotificationError from "../notification/notification.error";
 
 export default abstract class Entity {
   protected _id: string;
-  private notification: Notification;
+  protected notification: Notification;
+  private context: string;
 
-  constructor(private context: string) {
+  constructor(context?: string) {
+    this.context = context || Entity.name;
     this.notification = new Notification();
   }
 
@@ -13,20 +15,17 @@ export default abstract class Entity {
     return this._id;
   }
 
-  protected set id(val: string) {
-    if (val.length === 0) this.addError("Id is required");
-    this._id = val;
+  addError(...messages: string[]) {
+    messages.forEach((message) =>
+      this.notification.addError({
+        message,
+        context: this.context,
+      })
+    );
   }
 
-  validate() {
+  dispatchErrors() {
     if (this.notification.hasErrors())
       throw new NotificationError(this.notification.getErrors());
-  }
-
-  protected addError(message: string) {
-    this.notification.addError({
-      message,
-      context: this.context,
-    });
   }
 }

@@ -7,35 +7,34 @@ export default class Product extends Entity implements ProductInterface {
 
   constructor(id: string, name: string, price: number) {
     super("product");
-    this.id = id;
-    this.name = name;
-    this.price = price;
+    this._id = id;
+    this._name = name;
+    this._price = price;
     this.validate();
+    this.dispatchErrors();
   }
 
   get name(): string {
     return this._name;
   }
 
-  private set name(val: string) {
-    if (val.length === 0) this.addError("Name is required");
-    this._name = val;
-  }
-
   get price(): number {
     return this._price;
   }
 
-  private set price(val: number) {
-    if (val < 0) this.addError("Price must be greater than zero");
-    this._price = val;
-  }
-
   changeName(name: string): void {
-    this.name = name;
+    this._name = name;
+    this.validate();
   }
 
   changePrice(price: number): void {
-    this.price = price;
+    this._price = price;
+    this.validate();
+  }
+
+  validate() {
+    if (this._id.length === 0) this.addError("Id is required");
+    if (this._name.length === 0) this.addError("Name is required");
+    if (this._price < 0) this.addError("Price must be greater than zero");
   }
 }

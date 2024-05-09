@@ -4,5 +4,5 @@ export default interface ProductInterface {
   get price(): number;
   changeName(name: string): void;
   changePrice(price: number): void;
-  validate(): void;
+  dispatchErrors(): void;
 }

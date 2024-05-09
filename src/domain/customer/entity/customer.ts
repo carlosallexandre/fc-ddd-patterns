@@ -1,4 +1,5 @@
 import Entity from "../../@shared/entity/entity.abstract";
+import CustomerValidatorFactory from "../factory/customer-validator.factory";
 import Address from "../value-object/address";
 
 export default class Customer extends Entity {
@@ -9,18 +10,14 @@ export default class Customer extends Entity {
 
   constructor(id: string, name: string) {
     super("customer");
-    this.id = id;
-    this.name = name;
+    this._id = id;
+    this._name = name;
     this.validate();
+    this.dispatchErrors();
   }
 
   get name(): string {
     return this._name;
-  }
-
-  private set name(val: string) {
-    if (val.length === 0) this.addError("Name is required");
-    this._name = val;
   }
 
   get rewardPoints(): number {
@@ -30,6 +27,10 @@ export default class Customer extends Entity {
   changeName(name: string) {
     this._name = name;
     this.validate();
+  }
+
+  validate() {
+    CustomerValidatorFactory.create().validate(this);
   }
 
   get Address(): Address {
