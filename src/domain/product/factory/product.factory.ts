@@ -3,11 +3,15 @@ import ProductInterface from "../entity/product.interface";
 import { v4 as uuid } from "uuid";
 import ProductB from "../entity/product-b";
 
+interface ProductProps {
+  name: string;
+  price: number;
+}
+
 export default class ProductFactory {
   public static create(
-    type: string,
-    name: string,
-    price: number
+    { name, price }: ProductProps,
+    type: string = "a"
   ): ProductInterface {
     switch (type) {
       case "a":
